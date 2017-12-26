@@ -27,11 +27,7 @@ func (r *Repo) Path(filename string) string {
 
 // ProxyUrl
 func (r *Repo) ProxyUrl(filename string) string {
-	path := filename
-
-	if r.UrlPrefix != "" {
-		path = r.UrlPrefix + "/" + r.Name + "/" + filename
-	}
+	path := r.UrlPrefix + "/" + r.Name
 
 	return path
 }
