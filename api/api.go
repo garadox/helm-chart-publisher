@@ -68,7 +68,7 @@ func (api *API) getFileHandler(c echo.Context) error {
 
 	file, err := api.publisher.GetFile(repo, filename)
 	if err != nil {
-		return c.Blob(http.StatusNotFound)
+		return c.NoContent(http.StatusNotFound)
 	}
 
 	return c.Blob(http.StatusOK, "application/x-gzip", file.Body)

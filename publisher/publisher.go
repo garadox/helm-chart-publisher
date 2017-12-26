@@ -203,7 +203,7 @@ func (p *Publisher) getFile(repository *Repo, filename string)  (*storage.GetRes
 	if err != nil {
 		switch err.(type) {
 		case storage.PathNotFoundErr:
-			return index, nil
+			return resp, nil
 		}
 
 		return nil, StorageErr{err, fmt.Sprintf("get %s for %s failed", filename, repository.Name)}
