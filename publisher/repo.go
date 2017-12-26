@@ -11,6 +11,7 @@ type Repo struct {
 	Name      string
 	Bucket    string
 	Directory string
+	UrlPrefix string
 }
 
 // Path ...
@@ -19,6 +20,19 @@ func (r *Repo) Path(filename string) string {
 
 	if r.Directory != "" {
 		path = r.Directory + "/" + filename
+	}
+
+	return path
+}
+
+// ProxyUrl
+func (r *Repo) ProxyUrl(filename string) string {
+	path := filename
+
+	if r.UrlPrefix != "" && r.Directory != "" {
+		path = r.UrlPrefix + "/" + r.Directory + "/" + filename
+	} else if r.UrlPrefix != "" {
+		path = r.UrlPrefix + "/" + filename
 	}
 
 	return path

@@ -69,6 +69,14 @@ func (p *Publisher) GetIndex(repoName string) (*repo.IndexFile, error) {
 	return p.getIndex(repo)
 }
 
+func (p *Publisher) GetFile(repoName string, filename string) (*storage.GetResponse, error) {
+	repo, err := p.repos.Get(repoName)
+	if err != nil {
+		return nil, err
+	}
+	return p.getFile(repo, filename)
+}
+
 // Publish stores the chart in the given repository, updates correspondent index and stores it too.
 func (p *Publisher) Publish(repoName string, filename string, chart io.Reader) error {
 	// Fetches the repo by name
@@ -141,7 +149,7 @@ func (p *Publisher) updateIndex(r *Repo, filename string, chartContent []byte) e
 	return nil
 }
 
-// createNewIndex creates temporary index containing a single entrie to be merged with the current index
+// createNewIndex creates temporary index containing a single entry to be merged with the current index
 func (p *Publisher) createNewIndex(r *Repo, filename string, chartContent []byte) (*repo.IndexFile, error) {
 	index := repo.NewIndexFile()
 
@@ -154,7 +162,13 @@ func (p *Publisher) createNewIndex(r *Repo, filename string, chartContent []byte
 	if err != nil {
 		return nil, HelmErr{err, "Digest helm chart failed"}
 	}
-	index.Add(chart.Metadata, filename, p.store.GetURL(r.Bucket, r.Directory), hash)
+	if r.UrlPrefix != "" {
+		//Store index entries with proxy Url
+		index.Add(chart.Metadata, filename, r.ProxyUrl(filename), hash)
+	} else {
+		//Store direct link to storage entry
+		index.Add(chart.Metadata, filename, p.store.GetURL(r.Bucket, r.Directory), hash)
+	}
 
 	return index, nil
 }
@@ -182,4 +196,18 @@ func (p *Publisher) getIndex(repository *Repo) (*repo.IndexFile, error) {
 	}
 
 	return index, nil
+}
+
+func (p *Publisher) getFile(repository *Repo, filename string)  (*storage.GetResponse, error) {
+	resp, err := p.store.Get(repository.Bucket, repository.Path(filename))
+	if err != nil {
+		switch err.(type) {
+		case storage.PathNotFoundErr:
+			return index, nil
+		}
+
+		return nil, StorageErr{err, fmt.Sprintf("get %s for %s failed", filename, repository.Name)}
+	}
+
+	return resp, nil
 }

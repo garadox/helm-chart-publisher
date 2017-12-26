@@ -37,6 +37,7 @@ func (api *API) Serve(address string) {
 
 func (api *API) registerHandlers() {
 	api.echo.GET("/:repo/index.yaml", api.getIndexHandler)
+	api.echo.GET("/:repo/:filename", api.getFileHandler)
 	api.echo.PUT("/charts", api.publishChartHandler)
 	api.echo.GET("/health", api.healthHandler)
 }
@@ -59,6 +60,18 @@ func (api *API) getIndexHandler(c echo.Context) error {
 	}
 
 	return c.Blob(http.StatusOK, "text/vnd.yaml", b)
+}
+
+func (api *API) getFileHandler(c echo.Context) error {
+	repo := c.Param("repo")
+	filename := c.Param("filename")
+
+	file, err := api.publisher.GetFile(repo, filename)
+	if err != nil {
+		return c.Blob(http.StatusNotFound)
+	}
+
+	return c.Blob(http.StatusOK, "application/x-gzip", file.Body)
 }
 
 func (api *API) publishChartHandler(c echo.Context) error {

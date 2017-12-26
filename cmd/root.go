@@ -33,7 +33,7 @@ var (
 var RootCmd = &cobra.Command{
 	Use:   "helm-chart-publisher",
 	Short: "publishes helm chart",
-	Long:  `helm-chart-publisher publishes helm chart to a configured storage`,
+	Long:  `helm-chart-publisher publishes helm chart to a configured storage foo`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := config.ReadConfigFile(configFile); err != nil {
 			log.Fatal(err)
